@@ -1,5 +1,6 @@
 var axios = require("axios").default;
 var inquirer = require("inquirer");
+const { table } = require('table');
 
 function bigquestion() {
   inquirer
@@ -29,10 +30,41 @@ function bigquestion() {
       };
       console.log("Alright, ill show you!\n");
       axios.request(options).then(function (response) {
-        console.log(response.data);
+        // games we are getting back from api call cheapest is the first on the list
+        //console.log(response.data);
+        var currency = response.data.currency;
+        var lowestPrice = response.data.currentLowestPrice;
+        var gameDev = response.data.developer;
+        var gameName = response.data.name;
+        var release = response.data.releaseDate;
+        var storesArr = response.data.stores;
+
+       //creating table to hold info here
+       const data = [
+        ['Price: ' + currency, 'Seller:', 'URL:'],
+      ]
+      //data.push([storesArr[0].price, storesArr[0].seller, storesArr[0].url])
+      //pushing all store info into our table
+      for (let i = 0; i < storesArr.length; i++) {
+        var element = storesArr[i];
+        data.push(["$" + element.price, element.seller, element.url])
+        
+      }
+  
+  const config = {
+    columnDefault: {
+      width: 28,
+    },
+    header: {
+      alignment: 'center',
+      content: gameName + "\n" + release,
+    },
+  }
+  
+  console.log(table(data, config));
         question();
       }).catch(function (error) {
-        console.error("Sorry, we couldn't find that game. :(");
+        console.error(error);
         question();
       });
     }
