@@ -1,7 +1,25 @@
 var axios = require("axios").default;
-var inquirer = require("inquirer");
-// including packages for table and styles    
+var inquirer = require("inquirer"); 
 const { table } = require('table');
+const chalk = require('chalk');
+const ora = require('ora');
+const CFonts = require('cfonts');
+
+const spinner = ora('Finding the best deals...\n');
+  spinner.spinner = {
+    frames: [	"_",
+    "_",
+    "_",
+    "-",
+    "`",
+    "`",
+    "'",
+    "´",
+    "-",
+    "_",
+    "_",
+    "_"]
+  }
 
 function alert() {
   inquirer
@@ -35,7 +53,7 @@ function alert() {
       axios.request(options).then(function (response) {
         console.log(response.data);
         if (response.data === true) {
-          console.log("Alert set");
+          console.log(chalk.whiteBright.underline.bgGreen("Alert set! You're good to go!"));
           inquirer
         .prompt([
     {
@@ -48,15 +66,28 @@ function alert() {
     if (inquirerResponse.confirm4) {
     findgameid();
     } else {
-      console.log("alright, hope this app helped you in any way, shape, or form");
+      CFonts.say('Hope  this|helped you!', {
+        font: 'grid',              // define the font face
+        align: 'left',              // define text alignment
+        colors: ['red'],         // define all colors
+        background: 'transparent',  // define the background color, you can also use `backgroundColor` here as key
+        letterSpacing: 1,           // define letter spacing
+        lineHeight: 1,              // define the line height
+        space: true,                // define if the output text should have empty lines on top and on the bottom
+        maxLength: '6',             // define how many character can be on one line
+        gradient: true,            // define your two gradient colors
+        independentGradient: false, // define if you want to recalculate the gradient for each new line
+        transitionGradient: false,  // define if this is a transition between colors directly
+        env: 'node'                 // define the environment CFonts is being executed in
+      });
     }
   })
         } else {
-          console.log("Please make sure you inputted your details correctly.");
+          console.log(chalk.whiteBright.underline.bgRedBright("Please make sure you inputted your details correctly."));
           alert();
         }
       }).catch(function (error) {
-        console.error("something went wrong, please make sure you inputted everything correctly");
+        console.error(chalk.whiteBright.underline.bgRedBright("a fatal error occured."));
         alert();
       });
 
@@ -82,19 +113,35 @@ function findgameid() {
           'x-rapidapi-host': 'cheapshark-game-deals.p.rapidapi.com'
         }
       };
-      
+      console.log("\n-----------------------------------------------------------------------------------------------------");
+      spinner.start("finding gameID and information...");
       axios.request(options).then(function (response) {
         console.log(response.data);
-        console.log("remember this number, youll need it for your alert!");
+        spinner.succeed(chalk.whiteBright.underline.bgGreen("Heres what we found! Remember the gameID, you need it to make an alert!"));        
         alert();
       }).catch(function (error) {
-        console.error("sorry, something went wrong, make sure you typed everything correctly.");
+        spinner.fail(chalk.whiteBright.underline.bgRedBright("Sorry, we couldnt find the game you wanted. :("));
         findgameid();
       });
   });
 }
 
 function bigquestion() {
+  CFonts.say('Video Game|Deal  Finder!', {
+    font: 'grid',              // define the font face
+    align: 'left',              // define text alignment
+    colors: ['red'],         // define all colors
+    background: 'transparent',  // define the background color, you can also use `backgroundColor` here as key
+    letterSpacing: 1,           // define letter spacing
+    lineHeight: 1,              // define the line height
+    space: true,                // define if the output text should have empty lines on top and on the bottom
+    maxLength: '6',             // define how many character can be on one line
+    gradient: true,            // define your two gradient colors
+    independentGradient: false, // define if you want to recalculate the gradient for each new line
+    transitionGradient: false,  // define if this is a transition between colors directly
+    env: 'node'                 // define the environment CFonts is being executed in
+  });
+  
   inquirer
   .prompt([
     {
@@ -116,11 +163,12 @@ function bigquestion() {
         url: 'https://game-prices.p.rapidapi.com/game/'+inquirerResponse.gamename,
         params: {region: 'us', type: 'game'},
         headers: {
-          'x-rapidapi-key': '40db8a69bdmshbf4d7c2d3d7e633p11e2bajsn07e4904114cb',
+          'x-rapidapi-key': '4fe7a5e961mshc4441de8ddc7fb9p1aaa13jsn4207ba11ad8a',
           'x-rapidapi-host': 'game-prices.p.rapidapi.com'
         }
       };
-      console.log("Alright, ill show you!\n");
+      console.log("\n-----------------------------------------------------------------------------------------------------");
+      spinner.start(chalk.whiteBright.underline.bgBlueBright('Finding the best deals...\n'));
       axios.request(options).then(function (response) {
         // games we are getting back from api call cheapest is the first on the list
         //console.log(response.data);
@@ -140,7 +188,7 @@ function bigquestion() {
       //pushing all store info into our table
       for (let i = 0; i < storesArr.length; i++) {
         var element = storesArr[i];
-        data.push(["$" + element.price, element.seller, element.url])
+        data.push([chalk.inverse("$") + chalk.inverse(element.price), element.seller, element.url])
         
       }
   
@@ -150,23 +198,37 @@ function bigquestion() {
           },
           header: {
             alignment: 'center',
-            content: gameName + "\n" + gameDev + "\n" + release,
+            content: chalk.red(gameName) + "\n" + chalk.green(gameDev) + "\n" + chalk.blue(release),
           },
         }
         
         console.log(table(data, config));
+        spinner.succeed(chalk.whiteBright.underline.bgGreen("Heres what we found!"));
 
-        console.log("the best deal is $" + lowestPrice + " from seller " + storesArr[0].seller)
+        console.log("the best deal is "+ chalk.underline("$") + chalk.underline(lowestPrice) + " from seller " + chalk.underline(storesArr[0].seller))
 
         question();
       }).catch(function (error) {
-        console.error(error);
+        spinner.fail(chalk.whiteBright.underline.bgRedBright("Sorry, we couldnt find the game you wanted. :("));
         question();
       });
       
     }
     else {
-      console.log("Alright, no worries");
+      CFonts.say('Why even tell me| :/', {
+        font: 'huge',              // define the font face
+        align: 'left',              // define text alignment
+        colors: ['red'],         // define all colors
+        background: 'transparent',  // define the background color, you can also use `backgroundColor` here as key
+        letterSpacing: 1,           // define letter spacing
+        lineHeight: 1,              // define the line height
+        space: true,                // define if the output text should have empty lines on top and on the bottom
+        maxLength: '0',             // define how many character can be on one line
+        gradient: true,            // define your two gradient colors
+        independentGradient: false, // define if you want to recalculate the gradient for each new line
+        transitionGradient: false,  // define if this is a transition between colors directly
+        env: 'node'                 // define the environment CFonts is being executed in
+      });
     }
   });
 }
@@ -185,11 +247,12 @@ function diggquestion() {
         url: 'https://game-prices.p.rapidapi.com/game/'+inquirerResponse.gamename,
         params: {region: 'us', type: 'game'},
         headers: {
-          'x-rapidapi-key': '40db8a69bdmshbf4d7c2d3d7e633p11e2bajsn07e4904114cb',
+          'x-rapidapi-key': '4fe7a5e961mshc4441de8ddc7fb9p1aaa13jsn4207ba11ad8a',
           'x-rapidapi-host': 'game-prices.p.rapidapi.com'
         }
       };
-      console.log("Alright, ill show you!\n");
+      console.log("\n-----------------------------------------------------------------------------------------------------");
+      spinner.start(chalk.whiteBright.underline.bgBlueBright('Finding the best deals...\n'));
       axios.request(options).then(function (response) {
         //console.log(response.data);
         // games we are getting back from api call cheapest is the first on the list
@@ -225,11 +288,11 @@ function diggquestion() {
         }
         
         console.log(table(data, config));
-
+        spinner.succeed(chalk.whiteBright.underline.bgGreen("Heres what we found!"));
         console.log("the best deal is $" + lowestPrice + " from seller " + storesArr[0].seller)
         question();
       }).catch(function (error) {
-        console.error("Sorry, we couldnt find that game. :(");
+        spinner.fail(chalk.whiteBright.underline.bgRedBright("Sorry, we couldnt find the game you wanted. :("));
         question();
       });
     
@@ -260,7 +323,20 @@ function question() {
   if (inquirerResponse.confirm3) {
   findgameid();
   } else {
-    console.log("alright, hope this app helped you in any way, shape, or form");
+    CFonts.say('Hope  this|helped you!', {
+      font: 'grid',              // define the font face
+      align: 'left',              // define text alignment
+      colors: ['red'],         // define all colors
+      background: 'transparent',  // define the background color, you can also use `backgroundColor` here as key
+      letterSpacing: 1,           // define letter spacing
+      lineHeight: 1,              // define the line height
+      space: true,                // define if the output text should have empty lines on top and on the bottom
+      maxLength: '6',             // define how many character can be on one line
+      gradient: true,            // define your two gradient colors
+      independentGradient: false, // define if you want to recalculate the gradient for each new line
+      transitionGradient: false,  // define if this is a transition between colors directly
+      env: 'node'                 // define the environment CFonts is being executed in
+    });
   }
 })
 }
@@ -268,3 +344,14 @@ function question() {
 }
 
 bigquestion();
+
+
+
+
+
+
+
+
+
+
+
